@@ -1,0 +1,26 @@
+{
+    "name": "codio/ecommerce",
+    "description": "",
+    "authors": [
+        {
+            "name": "Rauf Abbas",
+            "email": "rafo.abbas@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Ecommerce\\": "",
+            "Modules\\Ecommerce\\App\\": "app/",
+            "Modules\\Ecommerce\\Database\\Factories\\": "database/factories/",
+            "Modules\\Ecommerce\\Database\\Seeders\\": "database/seeders/"
+        }
+    }
+}
