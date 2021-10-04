@@ -4,14 +4,11 @@ namespace Modules\Ecommerce\App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class AttributeSet extends Model
 {
     use HasFactory;
-
-    public const PUBLISHED = 'published';
-    public const DRAFT = 'draft';
-    public const PENDING = 'pending';
 
     protected $fillable = [
         'title',
@@ -23,6 +20,11 @@ class AttributeSet extends Model
         'is_comparable',
         'is_use_in_product_listing',
     ];
+
+    public function attributes(): HasMany
+    {
+        return $this->hasMany(Attribute::class);
+    }
 
     protected static function newFactory()
     {

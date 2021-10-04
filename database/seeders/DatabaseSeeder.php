@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Modules\Ecommerce\Database\Seeders\EcommerceDatabaseSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,6 +14,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
+        $this->call(EcommerceDatabaseSeeder::class);
         // \App\Models\User::factory(10)->create();
     }
 }

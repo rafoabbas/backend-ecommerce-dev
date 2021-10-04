@@ -29,8 +29,9 @@ class CreateProductsTable extends Migration
             $table->string('barcode')->nullable();
             $table->string('sku')->nullable();
             $table->string('status', 32)->default(StatusEnum::PREVIEW())->index();
-            $table->boolean('approved')->default(0);
-            $table->boolean('auto_approve')->default(0);
+            $table->boolean('approved')->default(false);
+            $table->boolean('auto_approve')->default(false);
+            $table->boolean('is_variation')->default(false);
             $table->timestamps();
             $table->softDeletes();
         });

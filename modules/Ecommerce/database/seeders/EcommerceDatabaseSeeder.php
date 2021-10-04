@@ -19,9 +19,12 @@ class EcommerceDatabaseSeeder extends Seeder
         Model::unguard();
 
         $this->brands();
+
         $this->categories();
 
-        // $this->call("OthersTableSeeder");
+        $this->call(AttributeDatabaseSeederTableSeeder::class);
+
+        $this->call(ProductDatabaseSeederTableSeeder::class);
     }
 
     public function brands(){
@@ -29,6 +32,8 @@ class EcommerceDatabaseSeeder extends Seeder
             Brand::factory(5)->create();
         }
     }
+
+
     public function categories(){
         if (! Category::count()){
             Category::factory(20)->create();

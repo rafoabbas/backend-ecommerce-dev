@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use Modules\Ecommerce\App\Http\Controllers\Api\ProductController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,3 +18,6 @@ use Illuminate\Http\Request;
 Route::middleware('auth:api')->get('/ecommerce', function (Request $request) {
     return $request->user();
 });
+
+Route::get('product/{slug}+p{id}', [ProductController::class,'show'])->name('api.product.show');
+Route::get('product/{slug}+v{id}', [ProductController::class,'showVariation'])->name('api.product.showVariation');

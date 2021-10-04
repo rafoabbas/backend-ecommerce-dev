@@ -4,6 +4,7 @@ namespace Modules\Ecommerce\App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Modules\Ecommerce\App\Enums\StatusEnum;
 use Modules\Ecommerce\Database\Factories\CategoryFactory;
 
 class Category extends Model
@@ -15,6 +16,10 @@ class Category extends Model
     public const PENDING = 'pending';
 
     protected $fillable = [ 'parent_id', 'name', 'slug', 'position', 'status'];
+
+    protected $casts = [
+        'status' => StatusEnum::class,
+    ];
 
     protected static function newFactory()
     {
