@@ -20,12 +20,21 @@ class EcommerceDatabaseSeeder extends Seeder
 
         $this->brands();
 
-        $this->categories();
+//        $this->categories();
 
+        $this->call(CategoryDatabaseTableTableSeeder::class);
         $this->call(AttributeDatabaseSeederTableSeeder::class);
-
-        $this->call(ProductDatabaseSeederTableSeeder::class);
+        $this->products(10);
     }
+
+    public function products($recursive){
+        $recursive -= 1;
+        $this->call(ProductDatabaseSeederTableSeeder::class);
+        if (! $recursive) return;
+        $this->products($recursive);
+    }
+
+
 
     public function brands(){
         if (! Brand::count()){
@@ -34,9 +43,5 @@ class EcommerceDatabaseSeeder extends Seeder
     }
 
 
-    public function categories(){
-        if (! Category::count()){
-            Category::factory(20)->create();
-        }
-    }
+
 }

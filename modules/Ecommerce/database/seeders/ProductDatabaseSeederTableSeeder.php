@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Ecommerce\App\Models\Attribute;
 use Modules\Ecommerce\App\Models\AttributeSet;
+use Modules\Ecommerce\App\Models\Category;
 use Modules\Ecommerce\App\Models\Product;
 use Modules\Ecommerce\App\Models\ProductVariation;
 
@@ -22,34 +23,22 @@ class ProductDatabaseSeederTableSeeder extends Seeder
 
         $pluckAttributeSetId = $this->pluckAttributeSetId();
 
-        $makeProducts = Product::factory(10000)->create();
+        $makeProducts = Product::factory(10000)
+            ->create();
 
         foreach ($makeProducts as $key => $product){
+
+            $product->categories()->sync($this->randomCategoriesId());
 
             //Product variation random create
             if (! $product['is_variation']) continue;
 
             //Attributeset color/size
-            $attributeSets = AttributeSet::all();
-
             $default = true;
 
-            $color = AttributeSet::where('slug', 'color')->first();
-            $size = AttributeSet::where('slug', 'size')->first();
-            $ram = AttributeSet::where('slug', 'ram')->first();
-//            $gpu = AttributeSet::where('slug', 'gpu')->first();
-//            $kamera = AttributeSet::where('slug', 'kamera')->first();
+            $crossJoins = $this->crossJoin();
 
-            $colors = $color->attributes()->pluck('id');
-            $sizes = $size->attributes()->pluck('id');
-            $rams = $ram->attributes()->pluck('id');
-//            $gpus = $gpu->attributes()->pluck('id');
-//            $kameras = $kamera->attributes()->pluck('id');
-
-//            $crossJoins = $colors->crossJoin($sizes, $rams, $gpus, $kameras);
-            $crossJoins = $colors->crossJoin($sizes, $rams);
-
-            foreach ($crossJoins as $cobinations){
+            foreach ($crossJoins as $combinations){
                 $productVariation = ProductVariation::factory()
                     ->productId($product->id)
                     ->default($default)
@@ -58,12 +47,12 @@ class ProductDatabaseSeederTableSeeder extends Seeder
                         'slug'  => $product->slug
                     ]);
 
-                foreach ($cobinations as $cobination){
+                foreach ($combinations as $combination){
                     $product->setProductAttributes([
                         'product_id'    => $product->id,
                         'product_variation_id' => $productVariation->id,
-                        'attribute_id' => $cobination,
-                        'attribute_set_id' => $pluckAttributeSetId[$cobination],
+                        'attribute_id' => $combination,
+                        'attribute_set_id' => $pluckAttributeSetId[$combination],
                         'default' => $default
                     ]);
                 }
@@ -72,7 +61,27 @@ class ProductDatabaseSeederTableSeeder extends Seeder
         }
     }
 
-    private function pluckAttributeSetId(){
+    public function crossJoin()
+    {
+        $color = AttributeSet::where('slug', 'color')->first();
+        $size = AttributeSet::where('slug', 'size')->first();
+        $ram = AttributeSet::where('slug', 'ram')->first();
+
+        $colors = $color->attributes()->pluck('id');
+        $sizes = $size->attributes()->pluck('id');
+        $rams = $ram->attributes()->pluck('id');
+
+        return  $colors->crossJoin($sizes, $rams);
+    }
+
+    public function randomCategoriesId(): array
+    {
+        $category = Category::whereNotNull('parent_id')->inRandomOrder()->first();
+        return [$category->id, $category->parent_id];
+    }
+
+    private function pluckAttributeSetId(): array
+    {
         return Attribute::pluck('attribute_set_id', 'id')->toArray();
     }
 }

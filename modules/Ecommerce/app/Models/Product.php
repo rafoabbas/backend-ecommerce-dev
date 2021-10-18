@@ -5,6 +5,7 @@ namespace Modules\Ecommerce\App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Modules\Ecommerce\App\Enums\StatusEnum;
@@ -40,9 +41,17 @@ class Product extends Model
     ];
 
 
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class,'category_product','product_id','category_id');
+    }
+
+    /**
+     * @return HasOne
+     */
     public function defaultProduct(): HasOne
     {
-        return $this->hasOne(ProductVariation::class);
+        return $this->hasOne(ProductVariation::class)->where('default', true);
     }
 
     /**
@@ -59,6 +68,10 @@ class Product extends Model
     public function variations(): HasMany
     {
         return $this->hasMany(ProductVariation::class);
+    }
+
+    public function scopeGetVariation($model, $variationId){
+        return $this->variations()->where('id', $variationId);
     }
 
 

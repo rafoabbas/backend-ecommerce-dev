@@ -7,13 +7,14 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class ProductShowResource extends JsonResource
 {
 
-    protected $defaultSelectedAttributeIds;
 
-    public function __construct($resource, $defaultSelectedAttributeIds = [])
+    protected $selectedProduct = null;
+
+    public function __construct($resource, $selectedProduct = null)
     {
         parent::__construct($resource);
 
-        $this->defaultSelectedAttributeIds = $defaultSelectedAttributeIds;
+        $this->setSelectedProduct($selectedProduct);
     }
 
     /**
@@ -24,56 +25,62 @@ class ProductShowResource extends JsonResource
      */
     public function toArray($request)
     {
+        //Seçili məhsulun null olub olmaması üçün yoxlama
+        $optionalSelectedProduct = optional($this->selectedProduct);
         return [
             'productId' => $this->id,
             'vendorId' => $this->vendor_id,
             'vendorName' => optional($this->vendor)->name,
             'brandId' => $this->brand_id,
             'brandName' => optional($this->brand)->name,
-            'name' => $this->name,
-            'description' => $this->description,
-            'content' => $this->content,
-            'slug' => $this->slug,
-            'discountPrice' => $this->discount_price,
-            'originalPrice' => $this->original_price,
-            'quantity' => $this->quantity,
-            'modelNo' => $this->model_no,
-            'barcode' => $this->barcode,
-            'sku' => $this->sku,
-            'productAttributes' => $this->showProductAttributes($this)
+            'name' => $this->selectedProduct ? $optionalSelectedProduct->name : $this->name,
+            'description' => $this->selectedProduct ? $optionalSelectedProduct->description : $this->description,
+            'content' => $this->selectedProduct ? $optionalSelectedProduct->content : $this->content,
+            'slug' => $this->selectedProduct ? $optionalSelectedProduct->slug : $this->slug,
+            'discountPrice' => $this->selectedProduct ? $optionalSelectedProduct->discount_price : $this->discount_price,
+            'originalPrice' => $this->selectedProduct ? $optionalSelectedProduct->original_price : $this->original_price,
+            'quantity' => $this->selectedProduct ? $optionalSelectedProduct->quantity : $this->quantity,
+            'modelNo' => $this->selectedProduct ? $optionalSelectedProduct->model_no : $this->model_no,
+            'barcode' => $this->selectedProduct ? $optionalSelectedProduct->barcode : $this->barcode,
+            'sku' => $this->selectedProduct ? $optionalSelectedProduct->sku : $this->sku,
+            $this->mergeWhen($this->is_variation, [
+                'productAttributes' => $this->showProductAttributes()
+            ])
         ];
     }
 
-
     /**
+     *
      * @param $product
      * @return array|mixed
      */
-    private function showProductAttributes($product){
-        $lastSelectedAttribute = $product->productAttributes()
-            ->join('attribute_sets', 'product_attributes.attribute_set_id', '=', 'attribute_sets.id')
-            ->orderBy('attribute_sets.order','DESC')
-            ->select('product_attributes.attribute_set_id','product_attributes.attribute_id', 'attribute_sets.slug','attribute_sets.title','attribute_sets.display_layout')
-            ->value('attribute_set_id');
+    private function showProductAttributes(): array
+    {
+
+        if (! $this->is_variation) return [];
+
+        $defaultSelectedAttributeIds = $this->selectedProduct
+            ->productAttributes()
+            ->pluck('attribute_id')
+            ->toArray();
 
         return $this->recursiveAttributes(
-            $product,
+            $this,
             [],
             null,
             [],
-            null,
-            $lastSelectedAttribute
+            $defaultSelectedAttributeIds,
         );
     }
 
 
     /**
+     * //TODO:: sekiller qismi elave edilecek
      * @param $product
      * @param array $selectedAttributeData
      * @param null $productVariationIds
      * @param array $data
-     * @param null $defaultVariationId
-     * @param null $lastSelectedAttribute
+     * @param array $defaultSelectedAttributeIds
      * @return array|mixed
      */
     public function recursiveAttributes(
@@ -81,27 +88,23 @@ class ProductShowResource extends JsonResource
         $selectedAttributeData = [],
         $productVariationIds = null,
         $data = [],
-        $defaultVariationId = null,
-        $lastSelectedAttribute = null
+        $defaultSelectedAttributeIds = []
     ){
-
         //Orderi 0 olan attribute_setin getirilmesi
-        $selectedAttribute = $product->productAttributes()
-            ->join('attribute_sets', 'product_attributes.attribute_set_id', '=', 'attribute_sets.id')
-            ->whereNotIn('attribute_set_id', $selectedAttributeData)
-            ->orderBy('attribute_sets.order','ASC')
-            ->select('product_attributes.attribute_set_id','product_attributes.attribute_id', 'attribute_sets.slug','attribute_sets.title','attribute_sets.display_layout')
-            ->first();
+        $selectedAttribute = $this->selectedAttributeQuery($product, $selectedAttributeData, $defaultSelectedAttributeIds);
 
         //Eger datalar yoxdursa o zaman burada datanı gətir
         if (is_null($selectedAttribute)){
             return $data;
         }
 
+        //attributeSetId - bu variantların ana bilgisini göstərir
         $selectedAttributeValue = $selectedAttribute->attribute_set_id;
 
-        $data[] = $this->setAttributeSet($product, $selectedAttribute, $productVariationIds, $lastSelectedAttribute);
+        // Product səhifəsində variantları göstərmək üçün
+        $data[] = $this->setAttributeSet($product, $selectedAttribute, $productVariationIds, $defaultSelectedAttributeIds);
 
+        // Productun hansı atributlarının eçili gələcəyini toplayır
         $selectedAttributeData[] = $selectedAttributeValue;
 
         $query = $product->productAttributes()
@@ -114,22 +117,21 @@ class ProductShowResource extends JsonResource
 
         $productVariationIds = $query->pluck('product_variation_id')->toArray();
 
-
-        return $this->recursiveAttributes($product, $selectedAttributeData, $productVariationIds, $data, $defaultVariationId, $lastSelectedAttribute);
+        return $this->recursiveAttributes($product, $selectedAttributeData, $productVariationIds, $data, $defaultSelectedAttributeIds);
     }
 
     /**
      * @param $product
      * @param $selectedAttribute
      * @param $productVariationIds
-     * @param $lastSelectedAttribute
+     * @param $defaultSelectedAttributeIds
      * @return array
      */
     private function setAttributeSet(
         $product,
         $selectedAttribute,
         $productVariationIds,
-        $lastSelectedAttribute
+        $defaultSelectedAttributeIds
     ): array
     {
         return [
@@ -141,7 +143,7 @@ class ProductShowResource extends JsonResource
                 $product,
                 $selectedAttribute->attribute_set_id,
                 $productVariationIds,
-                $lastSelectedAttribute
+                $defaultSelectedAttributeIds
             )
         ];
     }
@@ -150,14 +152,14 @@ class ProductShowResource extends JsonResource
      * @param $product
      * @param $selectedAttributeValue
      * @param $productVariationIds
-     * @param $lastSelectedAttribute
+     * @param $defaultSelectedAttributeIds
      * @return array
      */
     private function setAttribute(
         $product,
         $selectedAttributeValue,
         $productVariationIds,
-        $lastSelectedAttribute
+        $defaultSelectedAttributeIds
     ): array
     {
         return $product->productAttributes()
@@ -168,26 +170,62 @@ class ProductShowResource extends JsonResource
             ->with('attribute')
             ->groupBy('attribute_id')
             ->get()
-            ->map(function ($value) use ($lastSelectedAttribute){
-                return $this->arrayProductAttribute($value, $lastSelectedAttribute);
+            ->map(function ($value) use ($defaultSelectedAttributeIds){
+                return $this->arrayProductAttribute($value, $defaultSelectedAttributeIds);
             })->toArray();
     }
 
-
     /**
+     *
      * @param $value
+     * @param $defaultSelectedAttributeIds
      * @return array
      */
-    public function arrayProductAttribute($value): array
+    public function arrayProductAttribute(
+        $value,
+        $defaultSelectedAttributeIds
+    ): array
     {
         return [
-            'attributeId' => optional($value->attribute)->id,
+            'attributeId' => $value->attribute_id,
             'attributeTitle' => optional($value->attribute)->title,
             'attributeSlug' => optional($value->attribute)->slug,
             'attributeColor' => optional($value->attribute)->color,
             'productVariationId'     => optional($value->productVariation)->id,
             'productVariationSlug'     => optional($value->productVariation)->slug,
             'productVariationQuantity'     => optional($value->productVariation)->quantity,
+            'selected'  => in_array($value->attribute_id,$defaultSelectedAttributeIds)
         ];
+    }
+
+    /**
+     *
+     * @param $product
+     * @param array $selectedAttributeData
+     * @param array $defaultSelectedAttributeIds
+     * @return mixed
+     */
+    public function selectedAttributeQuery($product, array $selectedAttributeData = [], array $defaultSelectedAttributeIds = []){
+        $query = $product->productAttributes()
+            ->join('attribute_sets', 'product_attributes.attribute_set_id', '=', 'attribute_sets.id');
+
+        if (count($selectedAttributeData)){
+            $query->whereNotIn('attribute_set_id', $selectedAttributeData);
+        }
+
+        $query = $query->whereIn('attribute_id', $defaultSelectedAttributeIds)
+            ->orderBy('attribute_sets.order','ASC')
+            ->select('product_attributes.attribute_set_id','product_attributes.attribute_id', 'attribute_sets.slug','attribute_sets.title','attribute_sets.display_layout');
+        return $query->first();
+    }
+
+    /**
+     * Variyasiyalı məhsulun seçilmiş və ya keçərli variyasiyasını set edir
+     * @param null $defaultProduct
+     */
+    protected function setSelectedProduct(
+        $defaultProduct = null
+    ){
+        $this->selectedProduct = $defaultProduct ?? ($this->is_variation ? $this->defaultProduct()->first() : null);
     }
 }

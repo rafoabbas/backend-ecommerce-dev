@@ -19,5 +19,7 @@ Route::middleware('auth:api')->get('/ecommerce', function (Request $request) {
     return $request->user();
 });
 
-Route::get('product/{slug}+p{id}', [ProductController::class,'show'])->name('api.product.show');
-Route::get('product/{slug}+v{id}', [ProductController::class,'showVariation'])->name('api.product.showVariation');
+Route::group(['prefix' => 'product','as' => 'ecommerce.product.'], function (){
+    Route::get('{slug}+p{product}', [ProductController::class,'show'])->name('show');
+    Route::get('{slug}+v{productVariation}', [ProductController::class,'showProductVariation'])->name('show.variation');
+});

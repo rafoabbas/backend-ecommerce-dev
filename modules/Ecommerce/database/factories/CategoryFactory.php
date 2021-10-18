@@ -32,5 +32,14 @@ class CategoryFactory extends Factory
             'status' => StatusEnum::PUBLISHED(),
         ];
     }
+
+    public function parentId($parentId): Factory
+    {
+        return $this->state(function (array $attributes) use ($parentId){
+            return [
+                'parent_id' => $parentId,
+            ];
+        });
+    }
 }
 

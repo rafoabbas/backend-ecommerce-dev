@@ -20,8 +20,10 @@ class CreateProductAttributesTable extends Migration
             $table->foreignId('attribute_id')->constrained('attributes')->cascadeOnDelete();
             $table->foreignId('attribute_set_id')->constrained('attribute_sets')->cascadeOnDelete();
             $table->boolean('default')->default(false);
-            $table->index(['attribute_set_id']);
+            $table->index('product_variation_id');
+            $table->index('attribute_set_id');
             $table->index(['attribute_set_id', 'product_variation_id']);
+            $table->index(['attribute_id', 'attribute_set_id', 'product_variation_id'],'attribute_and_a_set_id_and_p_v_id');
         });
     }
 
