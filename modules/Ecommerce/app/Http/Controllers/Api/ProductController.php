@@ -28,9 +28,7 @@ class ProductController extends Controller
         if ($request->ajax()){
             return new ProductShowResource($product);
         }
-
         $product = json_decode(json_encode(new ProductShowResource($product)));
-
         return view('ecommerce::show', compact('product'));
     }
 
