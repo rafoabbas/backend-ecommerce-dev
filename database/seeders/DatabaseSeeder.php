@@ -16,7 +16,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        $this->call(EcommerceDatabaseSeeder::class);
+
+//        $this->call(EcommerceDatabaseSeeder::class);
 //
 //        $makeProduct = Product::factory()
 //            ->create();
@@ -25,8 +26,8 @@ class DatabaseSeeder extends Seeder
         // \App\Models\User::factory(10)->create();
     }
 
-    public function randomCategoriesId(){
-        $category = Category::whereNotNull('parent_id')->inRandomOrder()->first();
-        return [$category->id, $category->parent_id];
-    }
+//    public function randomCategoriesId(){
+//        $category = Category::whereNotNull('parent_id')->inRandomOrder()->first();
+//        return [$category->id, $category->parent_id];
+//    }
 }
