@@ -15,8 +15,6 @@ use Modules\Ecommerce\App\Transformers\ProductShowResource;
 
 class ProductController extends Controller
 {
-
-
     /**
      * Show the specified resource.
      * @param int $slug
