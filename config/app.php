@@ -15,6 +15,14 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    // --- domains
+
+    'domain' => env('APP_DOMAIN','ecommerce.test'),
+    'api_domain' => env('APP_API_DOMAIN','api.ecommerce.test'),
+    'vendor_domain' => env('APP_VENDOR_DOMAIN','vendor.ecommerce.test'),
+    'admin_domain' => env('APP_ADMIN_DOMAIN','admin.ecommerce.test'),
+
+    //--- end domains
     /*
     |--------------------------------------------------------------------------
     | Application Environment

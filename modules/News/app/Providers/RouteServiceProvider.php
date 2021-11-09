@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Ecommerce\App\Providers;
+namespace Modules\News\App\Providers;
 
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -15,7 +15,9 @@ class RouteServiceProvider extends ServiceProvider
      *
      * @var string
      */
-    protected $moduleNamespace = null;
+    protected $moduleNamespace = 'Modules\News\App\Http\Controllers';
+
+
 
     /**
      * Called before routes are registered.
@@ -37,27 +39,25 @@ class RouteServiceProvider extends ServiceProvider
                 ->middleware('api')
                 ->as('api.')
                 ->namespace($this->namespace)
-                ->group(module_path('Ecommerce', '/routes/api.php'));
+                ->group(module_path('News', '/routes/api.php'));
 
             Route::domain(config('app.domain'))
                 ->middleware('web')
                 ->namespace($this->namespace)
-                ->group(module_path('Ecommerce', '/routes/web.php'));
+                ->group(module_path('News', '/routes/web.php'));
 
             Route::domain(config('app.vendor_vendor'))
                 ->as('vendor.')
                 ->middleware('web')
-                ->group(module_path('Ecommerce', '/routes/vendor.php'));
+                ->group(module_path('News', '/routes/vendor.php'));
 
             Route::domain(config('app.admin_vendor'))
                 ->as('admin.')
                 ->middleware('web')
-                ->group(module_path('Ecommerce', '/routes/admin.php'));
-
-
-
+                ->group(module_path('News', '/routes/admin.php'));
         });
     }
+
 
     /**
      * Configure the rate limiters for the application.

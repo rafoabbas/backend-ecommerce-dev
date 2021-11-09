@@ -1,0 +1,26 @@
+{
+    "name": "codio/news",
+    "description": "",
+    "authors": [
+        {
+            "name": "Rauf Abbas",
+            "email": "rafo.abbas@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\News\\": "",
+            "Modules\\News\\App\\": "app/",
+            "Modules\\News\\Database\\Factories\\": "database/factories/",
+            "Modules\\News\\Database\\Seeders\\": "database/seeders/"
+        }
+    }
+}

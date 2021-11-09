@@ -34,10 +34,7 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/",
-            "Modules\\": "modules/",
-            "Modules\\Ecommerce\\App\\": "modules/Ecommerce/app/",
-            "Modules\\Ecommerce\\Database\\Factories\\": "modules/Ecommerce/database/factories/",
-            "Modules\\Ecommerce\\Database\\Seeders\\": "modules/Ecommerce/database/seeders/"
+            "Modules\\": "modules/"
         }
     },
     "autoload-dev": {
